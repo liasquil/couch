@@ -1,0 +1,12 @@
+{% extends 'base_default.html' %}
+
+{% block content %}
+
+<form action="{% url 'couches:search_couch' %}" method="GET">
+<table>
+{{ form.as_table }}
+</table>
+<input type="submit" value="Search">
+</form>
+
+{% endblock content %}

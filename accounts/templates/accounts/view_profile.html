@@ -1,0 +1,11 @@
+{% extends 'base_default.html' %}
+
+{% block content %}
+<h1>{{ user.username }}</h1>
+<h2>{{ profile.diet }}</h2>
+<ul>
+{% for s in language_skills %}
+<li>{{ s.language.name }}: {{ s.get_level_display }}</li>
+{% endfor %}
+</ul>
+{% endblock content %}

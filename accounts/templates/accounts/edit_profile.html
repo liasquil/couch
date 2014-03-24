@@ -1,0 +1,12 @@
+{% extends "base_default.html" %}
+
+
+{% block content %}
+<h1>Edit profile</h1>
+<form action="{% url 'accounts:edit_profile' %}" method="post">
+{% csrf_token %}
+{{ form.as_p }}
+<input type="submit" value="Save profile">
+</form>
+
+{% endblock content %}

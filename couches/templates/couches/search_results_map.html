@@ -1,0 +1,36 @@
+{% extends 'base_default.html' %}
+
+{% block content %}
+
+<p><a href="{% url 'couches:search_couch' %}">Back to virgin form</a></p>
+<form action="{% url 'couches:search_couch' %}" method="GET">
+<table>
+{{ form.as_table }}
+</table>
+<input type="submit" value="Search">
+</form>
+
+<h3>Search results</h3>
+<ul>
+{% for r in results %}
+<li>ID: {{ r.id }}, 
+Capacity: {{ r.capacity }}, 
+Typed location: {{ r.typed_location }}, 
+Distance: {{ r.distance_to_reference }} 
+[<a href="{% url 'couches:request_couch' r.id %}">Request</a>]</li>
+{% endfor %}
+</ul>
+
+
+
+<script type="text/javascript">
+window.myobj = {
+        markerClick: function() { window.location.href = this.url; },
+        markerOver: function() { this.openInfoWindow(); },
+        markerOut: function() { this.closeInfoWindow(); }
+    };
+</script>
+
+{{ mform.map }}
+{{ mform.media.js }}
+{% endblock content %}

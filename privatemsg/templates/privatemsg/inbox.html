@@ -1,0 +1,28 @@
+{% extends "base_default.html" %}
+
+
+{% block content %}
+<h1>Inbox</h1>
+<ul>
+{% for r in references %}
+<li>
+    <h2>({{ r.message.id}}) {{ r.message.subject }}</h2>
+    <p>
+    <a href="{% url 'privatemsg:delete' message_id=r.message.id %}">Delete</a> |
+    <a href="{% url 'privatemsg:reply_sender' preceding_message_id=r.message.id %}">Reply sender</a> |
+    <a href="{% url 'privatemsg:reply_all' preceding_message_id=r.message.id %}">Reply all</a><br />
+        <i>From:</i> {{ r.message.sender }}<br />
+        <i>Received at:</i> {{ r.message.sent_at }}<br />
+    </p>
+    <p>{{ r.message.content }}</p>
+    <h4 style="margin-bottom:5px">Preceding messages:</h4>
+    <ul style="padding-left:34px">
+        {% for pm in r.message.preceding_messages %}
+        <li>({{ pm.sent_at }}) {{ pm.subject}}</li>
+        {% endfor %}
+    </ul>
+    
+</li>
+{% endfor %}
+</ul>
+{% endblock content %}

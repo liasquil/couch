@@ -1,0 +1,16 @@
+{% extends "base_default.html" %}
+
+{% block content %}
+{% if request.session.token_email %}
+If registered, an email with further instructions has been sent to <i>{{ request.session.token_email }}</i>.
+{% else %}
+If registered, an email with further instructions has been sent to the email address of the
+account <i>{{ request.session.token_username }}</i>.
+{% endif %}
+
+{% if request.session.token_value %}
+<br />Nexs step: <a href="{% url 'accounts:reset_password' request.session.token_value %}">Click here</a>
+{% endif %}
+
+{% endblock content %}
+

@@ -1,0 +1,11 @@
+{% extends "base_default.html" %}
+
+{% block content %}
+<form action="{% url 'login' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}" method="post"> 
+{% csrf_token %}
+{{ form.as_p }}
+<input type="submit" value="Login" />
+</form>
+<p><a href="{% url 'signup' %}">Signup</a>
+<a href="{% url 'accounts:forgot_password' %}">Forgot your password?</a></p>
+{% endblock content %}

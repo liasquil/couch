@@ -1,0 +1,23 @@
+{% extends "base_default.html" %}
+
+
+{% block content %}
+
+<form action="{% url 'accounts:edit_account_handler' entry='email' %}" method="post">
+{% csrf_token %}
+{{ email_form.as_p }}
+<input type="submit" value="Change email">
+</form>
+
+<form action="{% url 'accounts:edit_account_handler' entry='username' %}" method="post">
+{% csrf_token %}
+{{ username_form.as_p }}
+<input type="submit" value="Change username">
+</form>
+
+<form action="{% url 'accounts:edit_account_handler' entry='password' %}" method="post">
+{% csrf_token %}
+{{ password_form.as_p }}
+<input type="submit" value="Change password">
+</form>
+{% endblock content %}

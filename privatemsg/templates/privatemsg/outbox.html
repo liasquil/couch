@@ -1,0 +1,29 @@
+{% extends "base_default.html" %}
+
+
+{% block content %}
+<h1>Outbox</h1>
+<ul>
+{% for m in sent_messages %}
+<li>
+    <h2>({{ m.id }}) {{ m.subject }}</h2>
+    
+    <p style="margin-bottom:0px">
+        <a href="{% url 'privatemsg:delete' message_id=m.id %}">Delete</a><br />
+        <i>Sent at:</i> {{ m.sent_at }}<br />
+        <i>Recipients:</i>
+        <ul style="padding-left:34px"> 
+            {% for r in m.recipients.all %}<li>{{ r.username }}</li>{% endfor %}
+        </ul>
+    </p>
+    <p>{{ m.content }}</p>
+    <h4 style="margin-bottom:5px">Preceding messages:</h4>
+    <ul style="padding-left:34px">
+    {% for pm in m.preceding_messages %}
+    <li>({{ pm.sent_at }}) {{ pm.subject}}</li>
+    {% endfor %}
+    </ul>
+</li>
+{% endfor %}
+</ul>
+{% endblock content %}

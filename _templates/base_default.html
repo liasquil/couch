@@ -1,0 +1,50 @@
+{% load static from staticfiles %}
+<html>
+<head>
+    {% block head %}
+        <title>{% block title %}{% endblock %}</title>
+        
+        {% block stylesheets %}
+        <link rel="stylesheet" type="text/css" href="{% static 'base_default_template/css/main.css'%}">
+        {% endblock stylesheets %}
+    {% endblock head %}
+
+</head>
+
+<body>
+{% block body %}
+<div id="main_container">
+    {% block flashbags %}
+        {% if messages %}
+        <ul class="flash_messages">
+            {% for message in messages %}
+            <li{% if message.tags %} class="{{ message.tags }}"{%endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+        {% endif %}
+    {% endblock flashbags %}
+
+    <p>
+    <b>Username:</b> {{ user.username }}<br />
+    <b>E-Mail:</b> {{ user.email }}<br />
+    <a href="{% url 'logout' %}">Logout</a><br />
+    <a href="{% url 'accounts:edit_account' %}">Edit account</a><br />
+    <a href="{% url 'accounts:edit_profile' %}">Edit profile</a><br />
+    <a href="{% url 'accounts:add_language_skill' %}">Add language</a><br />
+    {% if request.user.id %}<a href="{% url 'accounts:view_profile' request.user.id %}">View own profile</a><br />{% endif %}
+    <a href="{% url 'privatemsg:inbox' %}">Inbox</a> | 
+    <a href="{% url 'privatemsg:outbox' %}">Outbox</a> |
+    <a href="{% url 'privatemsg:new' %}">New message</a><br />
+    <a href="{% url 'couches:request_inbox' %}">Couch request inbox</a>|
+    <a href="{% url 'couches:request_outbox' %}">Couch request outbox</a><br />
+    <a href="{% url 'couches:new_couch' %}">Create couch</a> | 
+    <a href="{% url 'couches:search_couch' %}">Search couches</a>
+    </p>
+    
+    {% block content %}
+    {% endblock content %}
+</div>
+{% endblock body %}
+</body>
+</html>
+

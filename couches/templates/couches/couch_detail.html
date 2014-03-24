@@ -1,0 +1,10 @@
+{% extends 'base_default.html' %}
+
+{% block content %}
+
+{{ couch.capacity }}<br />
+{{ couch.latitude}} | {{ couch.longitude }}
+<a href="{% url 'couches:request_couch' couch.id %}">Request couch</a>
+
+
+{% endblock content %}

@@ -1,0 +1,10 @@
+{% extends 'base_default.html' %}
+
+{% block content %}
+<form action="{% url 'couches:new_couch' %}" method="POST">
+{% csrf_token %}
+{{ form.as_p }}
+<input type="submit" value="Post offer">
+</form>
+
+{% endblock content %}
