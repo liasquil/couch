@@ -9,6 +9,7 @@
 {% endfor %}
 </ul>
 
+<h3>Couches hosted by {{ user.username }}</h3>
 <ul>
 {% for c in active_couches %}
 <li><a href="{{ c.get_absolute_url }}">Couch #{{ c.id }}</a> at {{ c.coordinates }}</li>
