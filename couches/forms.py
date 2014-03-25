@@ -47,10 +47,10 @@ class NewCouchForm(forms.ModelForm):
                 Couch.objects.filter(host=self.host).count() >= Couch.MAX_ACTIVE_COUCHES_PER_USER:
             raise forms.ValidationError("You can only have up to {0} active couches at a time."\
                 .format(Couch.MAX_ACTIVE_COUCHES_PER_USER))
-        raise Exception("passes clean")
             # CHANGE this maybe when in newer versions of Django add_error() is available
             
     def save(self, commit=True):
+        raise Exception("reaches save")
         couch = super(NewCouchForm, self).save(commit=False)
         couch.latitude, couch.longitude = self.cleaned_data['location']['georesult'].coordinates
         couch.typed_location = self.cleaned_data['location']['literal']
