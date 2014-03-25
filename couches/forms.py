@@ -41,8 +41,8 @@ class NewCouchForm(forms.ModelForm):
             raise forms.ValidationError("This is not a valid location.")
         return {'georesult':georesult[0], 'literal':loc}
     
-    def clean(self):
-        cleaned_data = super(NewCouchForm, self).clean()
+    #def clean(self):
+        #cleaned_data = super(NewCouchForm, self).clean()
         #if cleaned_data['is_active'] == True and \
                 #Couch.objects.filter(host=self.host).count() >= Couch.MAX_ACTIVE_COUCHES_PER_USER:
             #raise forms.ValidationError("You can only have up to {0} active couches at a time."\
