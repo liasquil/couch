@@ -117,7 +117,7 @@ def search_couch_map(request):
                     maps.event.addListener(markers[-1], 'mouseout', 'myobj.markerOut')
                     maps.event.addListener(markers[-1], 'click', 'myobj.markerClick')
                     info = maps.InfoWindow({
-                        'content': str('Couch at {0}, hosted by <b>{1}</b><img width="100" height="80" src="https://upload.wikimedia.org/wikipedia/commons/thumb/6/65/Einfamilienhaus.svg/220px-Einfamilienhaus.svg.png" alt="dont work">').format(r.float_coordinates,r.host.username),
+                        'content': str('Couch at {0}, hosted by <b>{1}</b>').format(r.float_coordinates,r.host.username),
                         'disableAutoPan': True
                     })
                     info.open(gmap, markers[-1])
