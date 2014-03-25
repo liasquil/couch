@@ -51,7 +51,6 @@ class NewCouchForm(forms.ModelForm):
         return cleaned_data
             
     def save(self, commit=True):
-        raise Exception("reaches save")
         couch = super(NewCouchForm, self).save(commit=False)
         couch.latitude, couch.longitude = self.cleaned_data['location']['georesult'].coordinates
         couch.typed_location = self.cleaned_data['location']['literal']
