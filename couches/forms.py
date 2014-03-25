@@ -22,6 +22,7 @@ class NewCouchForm(forms.ModelForm):
         
     
     def __init__(self, *args, **kwargs):
+        raise Exception
         self.host = kwargs.pop('host', None)
         super(NewCouchForm, self).__init__(*args, **kwargs)
         
