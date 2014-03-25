@@ -18,11 +18,10 @@ class NewCouchForm(forms.ModelForm):
             'capacity': 'Maximum number of visitors',
             'uncomfortable_capacity': 'Maximum visitors if it really needs to be',
         }
-        exclude = ('longitudee', 'latitude', 'typed_location', 'host') # WARNING: CHANGE this from 'exclude' to 'fields'
+        exclude = ('longitude', 'latitude', 'typed_location', 'host') # WARNING: CHANGE this from 'exclude' to 'fields'
         
     
     def __init__(self, *args, **kwargs):
-        raise Exception
         self.host = kwargs.pop('host', None)
         super(NewCouchForm, self).__init__(*args, **kwargs)
         
@@ -42,12 +41,12 @@ class NewCouchForm(forms.ModelForm):
             raise forms.ValidationError("This is not a valid location.")
         return {'georesult':georesult[0], 'literal':loc}
     
-    #def clean(self):
-        #cleaned_data = super(NewCouchForm, self).clean()
-        #if cleaned_data['is_active'] == True and \
-                #Couch.objects.filter(host=self.host).count() >= Couch.MAX_ACTIVE_COUCHES_PER_USER:
-            #raise forms.ValidationError("You can only have up to {0} active couches at a time."\
-                #.format(Couch.MAX_ACTIVE_COUCHES_PER_USER))
+    def clean(self):
+        cleaned_data = super(NewCouchForm, self).clean()
+        if cleaned_data['is_active'] == True and \
+                Couch.objects.filter(host=self.host).count() >= Couch.MAX_ACTIVE_COUCHES_PER_USER:
+            raise forms.ValidationError("You can only have up to {0} active couches at a time."\
+                .format(Couch.MAX_ACTIVE_COUCHES_PER_USER))
             # CHANGE this maybe when in newer versions of Django add_error() is available
             
     def save(self, commit=True):
