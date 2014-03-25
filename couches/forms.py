@@ -18,7 +18,7 @@ class NewCouchForm(forms.ModelForm):
             'capacity': 'Maximum number of visitors',
             'uncomfortable_capacity': 'Maximum visitors if it really needs to be',
         }
-        exclude = ('longitude', 'latitude', 'typed_location', 'host') # WARNING: CHANGE this from 'exclude' to 'fields'
+        exclude = ('longitudee', 'latitude', 'typed_location', 'host') # WARNING: CHANGE this from 'exclude' to 'fields'
         
     
     def __init__(self, *args, **kwargs):
