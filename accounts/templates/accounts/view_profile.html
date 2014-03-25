@@ -8,4 +8,10 @@
 <li>{{ s.language.name }}: {{ s.get_level_display }}</li>
 {% endfor %}
 </ul>
+
+<ul>
+{% for c in active_couches %}
+<li><a href="{{ c.get_absolute_url }}">Couch #{{ c.id }}</a> at {{ c.coordinates }}</li>
+{% endfor %}
+</ul>
 {% endblock content %}

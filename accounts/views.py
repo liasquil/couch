@@ -371,10 +371,12 @@ def view_profile(request, user_id):
     user = get_object_or_404(CustomUser, pk=user_id)
     profile = user.profile
     skills = LanguageSkill.objects.filter(speaker_profile=profile)
+    active_couches = user.couch_set.filter(is_active=True)
     return render(request, 'accounts/view_profile.html', {
         'profile':profile,
         'user':user,
         'language_skills':skills,
+        'active_couches':active_couches,
     })
 
 # page the user is redirected to after login, unless he had requested a specific one before

@@ -8,11 +8,9 @@ from models import Couch, CouchRequest
 @login_required
 def new_couch(request):
     if request.method == 'POST':
-        form = NewCouchForm(request.POST)
+        form = NewCouchForm(request.POST, host=request.user)
         if form.is_valid():
-            couch = form.save(commit=False)
-            couch.host = request.user
-            couch.save()
+            couch = form.save()
             return redirect('couches:couch_detail', couch.id)
     else:
         form = NewCouchForm()
@@ -187,3 +185,12 @@ def decline_request(request, couch_request_id):
         'couch_request':couch_request,
         'form': form
     })
+
+@login_required
+def set_status(request, couch_id, action='deactivate'):
+    couch = get_object_or_404(Couch, pk=couch_id, host=request.user)
+    if action == 'activate': 
+        couch.activate()
+    else:
+        couch.deactivate()
+    return redirect('couches:couch_detail', couch_id)

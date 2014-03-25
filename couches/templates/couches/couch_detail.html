@@ -2,9 +2,14 @@
 
 {% block content %}
 
-{{ couch.capacity }}<br />
-{{ couch.latitude}} | {{ couch.longitude }}
+<h1>Couch #{{ couch.id }}</h1>
+<p>Capacity: {{ couch.capacity }} people ({{ couch.uncomfortable_capacity }} if it may get uncomfortable)<br />
+Coordinates: {{ couch.coordinates }}<br />
 <a href="{% url 'couches:request_couch' couch.id %}">Request couch</a>
-
+</p>
+{% if couch.host = request.user %}
+{% if couch.is_active %}<a href="{% url 'couches:deactivate' couch.id %}">Deactivate{% else %}
+<a href="{% url 'couches:activate' couch.id %}">Activate{% endif %}
+{% endif %}
 
 {% endblock content %}

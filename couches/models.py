@@ -166,21 +166,26 @@ class Couch(EarthSurfaceLocation):
     lockable_room = models.BooleanField(default=False)
     typed_location = models.CharField(max_length=400)
     
-    MAX_COUCHES_PER_USER = 5
+    MAX_ACTIVE_COUCHES_PER_USER = 3
     
     def clean(self):
         if self.uncomfortable_capacity < self.capacity:
             raise ValidationError("The uncomfortable capacity is meant to be an increase of " +\
                 "the normal one, thus has to be bigger or equal.")
-        if self.id and Couch.objects.filter(host=self.host, is_active=True).count() >= 5:
-            raise ValidationError("A maximum of {0} active couches is possible per account."\
-                .format(self.MAX_COUCHES_PER_USER))
         
     def get_absolute_url(self):
         return reverse('couches:couch_detail', args=(self.id,))
 
     def __unicode__(self):
         return "#{0} -- {1}".format(str(self.pk), self.free_text)
+    
+    def activate(self):
+        self.decision = True
+        self.save()
+    
+    def deactivate(self):
+        self.is_active = False
+        self.save()
 
 
 class CouchRequest(models.Model):
