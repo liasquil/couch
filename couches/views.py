@@ -8,7 +8,8 @@ from models import Couch, CouchRequest
 @login_required
 def new_couch(request):
     if request.method == 'POST':
-        form = NewCouchForm(request.POST, host=request.user)
+        #form = NewCouchForm(request.POST, host=request.user)
+        form = NewCouchForm(request.POST)
         if form.is_valid():
             couch = form.save()
             return redirect('couches:couch_detail', couch.id)
