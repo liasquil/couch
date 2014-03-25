@@ -27,15 +27,17 @@ class Message(models.Model):
         return set(self.recipients.all())|set([self.sender])
     
     def get_preceding_messages(self, for_user):
+        """ Recursively returns linear series of messages which each are on some level 'preceding'
+        to this one. """
+        
         prmsg = self.preceding_message
-        if ((prmsg == None) or                                 # normal exit condition
-                for_user not in prmsg.involved_people_set or   # aborts when it reaches foreign msg
-                for_user not in self.involved_people_set):     # cannot start at foreign msg (not covered by condition above!)
+        if ((prmsg == None) or                                                    # Normal exit condition.
+                (prmsg.deleted_by_sender == True and for_user == prmsg.sender) or # Abort when preceding message was deleted by sender.
+                (self.deleted_by_sender == True and for_user == self.sender) or   # Abort when initial msg was deleted by sender. Redundant, but at the first call this is not covered by condition above!
+                for_user not in prmsg.involved_people_set or                      # Abort when it reaches foreign msg
+                for_user not in self.involved_people_set):                        # Cannot start at foreign msg (not covered by condition above!)
             return Message.objects.none()
         return prmsg.get_preceding_messages(for_user=for_user)|Message.objects.filter(pk=prmsg.id)
-        # Since the preceding msg is older, it has a lower id. So
-        # the resulting set will be chronologically ordered with the
-        # youngest message last.
     
     def get_subsequent_messages(self, for_user):
         """ Recursively get the largest continuous tree of messages which are all
