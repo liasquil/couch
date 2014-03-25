@@ -22,9 +22,9 @@ class NewCouchForm(forms.ModelForm):
         
     
     def __init__(self, *args, **kwargs):
+        raise Exception
         self.host = kwargs.pop('host', None)
         super(NewCouchForm, self).__init__(*args, **kwargs)
-        raise Exception
         
     def clean_share_surface(self):
         sf = self.cleaned_data.get("share_surface")
