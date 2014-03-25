@@ -21,9 +21,10 @@ class NewCouchForm(forms.ModelForm):
         exclude = ('longitude', 'latitude', 'typed_location', 'host') # WARNING: CHANGE this from 'exclude' to 'fields'
         
     
-    #def __init__(self, *args, **kwargs):
-        #self.host = kwargs.pop('host', None)
-        #super(NewCouchForm, self).__init__(*args, **kwargs)
+    def __init__(self, *args, **kwargs):
+        self.host = kwargs.pop('host', None)
+        super(NewCouchForm, self).__init__(*args, **kwargs)
+        raise Exception
         
     def clean_share_surface(self):
         sf = self.cleaned_data.get("share_surface")
