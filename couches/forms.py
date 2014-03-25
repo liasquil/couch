@@ -48,6 +48,7 @@ class NewCouchForm(forms.ModelForm):
             raise forms.ValidationError("You can only have up to {0} active couches at a time."\
                 .format(Couch.MAX_ACTIVE_COUCHES_PER_USER))
             # CHANGE this maybe when in newer versions of Django add_error() is available
+        return cleaned_data
             
     def save(self, commit=True):
         raise Exception("reaches save")
