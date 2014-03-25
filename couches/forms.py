@@ -53,6 +53,7 @@ class NewCouchForm(forms.ModelForm):
         couch = super(NewCouchForm, self).save(commit=False)
         couch.latitude, couch.longitude = self.cleaned_data['location']['georesult'].coordinates
         couch.typed_location = self.cleaned_data['location']['literal']
+        couch.host = self.host
         if commit:
             couch.save()
         return couch
