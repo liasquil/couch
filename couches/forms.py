@@ -22,7 +22,6 @@ class NewCouchForm(forms.ModelForm):
         
     
     def __init__(self, *args, **kwargs):
-        raise Exception
         self.host = kwargs.pop('host', None)
         super(NewCouchForm, self).__init__(*args, **kwargs)
         
@@ -43,6 +42,7 @@ class NewCouchForm(forms.ModelForm):
         return {'georesult':georesult[0], 'literal':loc}
     
     def clean(self):
+        raise Exception("reaches clean")
         cleaned_data = super(NewCouchForm, self).clean()
         if cleaned_data['is_active'] == True and \
                 Couch.objects.filter(host=self.host).count() >= Couch.MAX_ACTIVE_COUCHES_PER_USER:
