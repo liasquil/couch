@@ -2,6 +2,9 @@ from django.test import TestCase
 
 from privatemsg.models import Message, Reference
 from accounts.models import CustomUser
+from accounts.tests.utils import (
+    create_user,
+)
 
 class MessageTests(TestCase):
     
@@ -20,12 +23,28 @@ class MessageTests(TestCase):
             Reference.objects.create(message=msg, recipient=r)
         return msg
     
+    
+    def test_sender_delete(self):
+        user = CustomUser.objects.create(username='user', email='user@example.com')
+        partner1 = CustomUser.objects.create(username='partner1', email='p1@example.com')
+        partner2 = CustomUser.objects.create(username='partner2', email='p2@example.com')
+        msg = self.send_message(user, None, 'Delmsg test', '----', (partner1, partner2))
+        references = msg.references.all()
+        self.assertEqual(len(references), 2)  # just to make sure I set up the test correctly
+        msg.sender_delete()
+        try:
+            updated_msg = Message.objects.get(pk=msg.id)
+        except Message.DoesNotExist:
+            self.fail("Call to remove() deleted the message's database entry.")
+        self.assertEqual(msg.deleted_by_sender, True)
+        updated_references = updated_msg.references.all()
+        self.assertEqual(set(references), set(updated_references))
+    
     def test_get_thread_returns_full_thread_if_user_is_involved_in_every_message(self):
         pass
     
     def test_get_thread_cuts_at_foreign_message(self):
         pass
-    
     
     def test_get_preceding_messages_returns_full_linear_series(self):
         # 'linear' means that branches are not considered
@@ -147,3 +166,22 @@ class MessageTests(TestCase):
         self.assertEqual(set(calculated_series[10]), set([]))
         self.assertEqual(set(calculated_series[11]), set([]))
     
+    def test_get_preceding_messages_cuts_at_sender_deleted_message_for_sender_and_cuts_not_for_recipient(self):
+        user = create_user('user', 'user@example.com')
+        partner1 = create_user('partner1', 'p1@example.com')
+        partner2 = create_user('partner2', 'p2@example.com')
+        
+        m0 = self.send_message(user, None, 'Subject0', '----', (partner1, partner2))
+        m1 = self.send_message(partner1, m0, 'Subject1', '----', (user, partner2))
+        m2 = self.send_message(user, m1, 'Subject2', '----', (partner1, partner2))
+        m3 = self.send_message(partner2, m0, 'Subject3', '----', (user, partner1))
+        m2.sender_delete()
+        messages = [m0,m1,m2,m3]
+        
+        series0 = m3.get_preceding_messages(for_user=user)
+        series1 = m3.get_preceding_messages(for_user=partner1)
+        series2 = m3.get_preceding_messages(for_user=partner2)
+        
+        self.assertEqual(set(series0), {m3}, "get_preceding_messages() for sender did not abort at message he deleted.")
+        self.assertEqual(set(series1), set(messages), "get_preceding_messages() for recipient aborted at only sender-deleted message")
+        self.assertEqual(set(series2), set(messages), "get_preceding_messages() for recipient aborted at only sender-deleted message")

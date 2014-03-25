@@ -13,6 +13,10 @@ class Message(models.Model):
     content = models.TextField(max_length=40000)
     deleted_by_sender = models.BooleanField(default=False)
     
+    def sender_delete(self):
+        self.deleted_by_sender=True
+        self.save()
+    
     def save(self, *args, **kwargs):
         if not self.id:
             self.sent_at = timezone.now()
@@ -39,13 +43,13 @@ class Message(models.Model):
         involve the for_user either as sender or recipient.
         It is not important whether the for_user was involved in the
         root message, though. So you can still get a non-empty tree
-        for a root message even if for_user was neither its sender nor 
+        for a root message if for_user was neither its sender nor 
         recipient.
         """
 
         # Since we cannot query the ManyToManyField 'recipients' using
         # __contains, we have to take a detour over the references.
-        # These are the refs for all msgs which the user *received*
+        # First we fetch are the refs for all msgs which the user *received*
         # and which are immediate replies to 'self'.
         # EXTEND this maybe to take deletion into account.
         refs = Reference.objects.filter(message__preceding_message=self, recipient=for_user)
@@ -66,8 +70,11 @@ class Message(models.Model):
         return self.subject
     
 class Reference(models.Model):
-    message = models.ForeignKey(Message)
-    recipient = models.ForeignKey(settings.AUTH_USER_MODEL)
+    message = models.ForeignKey(Message, related_name='references')
+    recipient = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='message_references')
     
     read_at = models.DateTimeField(null=True)
     deleted = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return self.message.subject + str(self.id)
