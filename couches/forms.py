@@ -25,15 +25,10 @@ class NewCouchForm(forms.ModelForm):
         self.host = kwargs.pop('host', None)
         super(NewCouchForm, self).__init__(*args, **kwargs)
         
-    def clean_share_surface(self):
-        sf = self.cleaned_data.get("share_surface")
-        sr = self.cleaned_data.get("share_room") 
-        if ((sf == Couch.DEPENDS and sr not in (Couch.DEPENDS, Couch.YES)) or
-                (sf == Couch.YES and sr != Couch.YES)):
-            raise forms.ValidationError("This constellation cannot happen.")
-        return sf
-        
+       
     def clean_location(self):
+        """ Checks that a Geolocation for input exists and if so, returns dict with that
+        location and with the original input. """
         loc = self.cleaned_data.get("location")
         try:
             georesult = Geocoder.geocode(loc)
@@ -42,12 +37,22 @@ class NewCouchForm(forms.ModelForm):
         return {'georesult':georesult[0], 'literal':loc}
     
     def clean(self):
+        # CHANGE all this maybe when add_error() is available in a newer version of Django
         cleaned_data = super(NewCouchForm, self).clean()
         if cleaned_data['is_active'] == True and \
                 Couch.objects.filter(host=self.host).count() >= Couch.MAX_ACTIVE_COUCHES_PER_USER:
             raise forms.ValidationError("You can only have up to {0} active couches at a time."\
                 .format(Couch.MAX_ACTIVE_COUCHES_PER_USER))
-            # CHANGE this maybe when in newer versions of Django add_error() is available
+            del cleaned_data['is_active']
+            
+        share_surface = cleaned_data.get("share_surface")
+        share_room = cleaned_data.get("share_room")
+        if ((share_surface == Couch.DEPENDS and share_room not in (Couch.DEPENDS, Couch.YES)) or
+                (share_surface == Couch.YES and share_room != Couch.YES)):
+            raise forms.ValidationError("This constellation of room- and surface-sharing cannot happen.")
+            del cleaned_data['share_surface']
+            del cleaned_data['share_room']
+            
         return cleaned_data
             
     def save(self, commit=True):

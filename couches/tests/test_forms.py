@@ -1,16 +1,99 @@
 from django.test import TestCase
 
-from ..forms import SearchCouchForm
+from ..forms import (
+    SearchCouchForm,
+    NewCouchForm,
+)
 from ..models import Couch
 from utils import create_couch
 
 from accounts.tests.utils import create_user, create_lang, create_lang_skill
 from accounts.models import Profile
 
+class NewCouchFormTests(TestCase):
+    def setUp(self):
+        self.base_data = {
+            'is_active': True,
+            'capacity': 1,
+            'smoker_household': True,
+            'smoking_possibility': Couch.INDOORS,
+            'children_in_household': Couch.NO,
+            'children_welcome': Couch.NO,
+            'pets_in_household': Couch.NO,
+            'pets_welcome': Couch.NO,
+            'can_use_kitchen': Couch.NO,
+            'can_use_washer': Couch.NO,
+            'share_room': Couch.NO,
+            'share_surface': Couch.NO,
+            'wheelchair_accessible': True,
+            'lockable_room': True,
+            'location': 'Berlin',
+        }
+    
+    def test_complains_about_impossible_constellation_of_sharing_room_and_surface(self):
+        """ Validates that only reasonable combinations of share_room and share_surface
+        are possible. """
+        
+        # Make sure that a set of form data passes so that the form validation really 
+        # fails for what we're testing.
+        data = self.base_data.copy()
+        data['share_surface'] = Couch.NO
+        data['share_room'] = Couch.NO
+        form = NewCouchForm(data=data)
+        self.assertTrue(form.is_valid(), msg="Form validation failed unexpectedly.")
+        
+        data = self.base_data.copy()
+        data['share_surface'] = Couch.DEPENDS
+        data['share_room'] = Couch.NO
+        form = NewCouchForm(data=data)
+        self.assertFalse(form.is_valid(), msg="Form accepted that it might happen to share a surface without sharing a room.")
+        
+        data = self.base_data.copy()
+        data['share_surface'] = Couch.DEPENDS
+        data['share_room'] = Couch.DEPENDS
+        form = NewCouchForm(data=data)
+        self.assertTrue(form.is_valid(), msg="Form validation unexpectedly failed when stating both room- and surface-sharing DEPENDS.")
+        
+        data = self.base_data.copy()
+        data['share_surface'] = Couch.DEPENDS
+        data['share_room'] = Couch.YES
+        form = NewCouchForm(data=data)
+        self.assertTrue(form.is_valid(), msg="Form validation unexpectedly failed when stating both room-sharing YES and surface-sharing DEPENDS.")
+        
+        data = self.base_data.copy()
+        data['share_surface'] = Couch.YES
+        data['share_room'] = Couch.NO
+        form = NewCouchForm(data=data)
+        self.assertFalse(form.is_valid(), msg="Form accepted that one would share a surface without sharing a room.")
+        
+        data = self.base_data.copy()
+        data['share_surface'] = Couch.YES
+        data['share_room'] = Couch.DEPENDS
+        form = NewCouchForm(data=data)
+        self.assertFalse(form.is_valid(), msg="Form accepted that one would share a surface whilst not necessarily sharing a room.")
+        
+        data = self.base_data.copy()
+        data['share_surface'] = Couch.YES
+        data['share_room'] = Couch.YES
+        form = NewCouchForm(data=data)
+        self.assertTrue(form.is_valid(), msg="Form validation unexpectedly failed when stating both room- and surface-sharing YES.")
+        
+        
+
+
 
 class SearchCouchFormTests(TestCase):
     def setUp(self):
         pass
+    
+        
+    def test_clean_max_host_diet(self):
+        data = {'people_count':1, 'min_host_diet':Profile.VEGAN, 'max_host_diet':Profile.VEGAN}
+        form = SearchCouchForm(data=data)
+        self.assertTrue(form.is_valid(), msg="Complained about min_host_diet equal to max_host_diet")
+        data = {'people_count':1, 'min_host_diet':Profile.VEGAN, 'max_host_diet':Profile.NEARLYVEGAN}
+        form = SearchCouchForm(data=data)
+        self.assertFalse(form.is_valid(), msg="Did not complain about min_host_diet more restricive than max_host_diet.")
     
     def test_smoking_possibility_filter(self):
         host = create_user('smoking host', 'sh@example.org')
@@ -125,14 +208,6 @@ class SearchCouchFormTests(TestCase):
         s_4 = set(couches.filter(host__pk__in=[]))
         self.assertTrue(set(filtered_sets[4]).issubset(s_4), msg="Missed to lang-exclude a couch  at level 4")
         self.assertTrue(set(filtered_sets[4]).issuperset(s_4), msg="Wrongly lang-excluded a couch at level 4")
-        
-    def test_clean_max_host_diet(self):
-        data = {'people_count':1, 'min_host_diet':Profile.VEGAN, 'max_host_diet':Profile.VEGAN}
-        form = SearchCouchForm(data=data)
-        self.assertTrue(form.is_valid(), msg="Complained about min_host_diet equal to max_host_diet")
-        data = {'people_count':1, 'min_host_diet':Profile.VEGAN, 'max_host_diet':Profile.NEARLYVEGAN}
-        form = SearchCouchForm(data=data)
-        self.assertFalse(form.is_valid(), msg="Did not complain about min_host_diet more restricive than max_host_diet.")
         
     def test_host_diet_filter(self):
         hosts = []

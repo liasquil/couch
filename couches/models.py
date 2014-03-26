@@ -129,7 +129,7 @@ class Couch(EarthSurfaceLocation):
     is_active = models.BooleanField(default=True)
     free_text = models.TextField(blank=True)
     capacity = models.PositiveSmallIntegerField(default=1)
-    uncomfortable_capacity = models.PositiveSmallIntegerField(default=1)
+    uncomfortable_capacity = models.PositiveSmallIntegerField(default=1, blank=True)
     smoker_household = models.BooleanField(default=False)
     host = models.ForeignKey(CustomUser, null=False)
     
@@ -169,6 +169,8 @@ class Couch(EarthSurfaceLocation):
     MAX_ACTIVE_COUCHES_PER_USER = 3
     
     def clean(self):
+        if not self.uncomfortable_capacity:
+            self.uncomfortable_capacity = self.capacity
         if self.uncomfortable_capacity < self.capacity:
             raise ValidationError("The uncomfortable capacity is meant to be an increase of " +\
                 "the normal one, thus has to be bigger or equal.")
@@ -200,15 +202,15 @@ class CouchRequest(models.Model):
     message = models.TextField(blank=True)
     reply = models.TextField(blank=True)
     
-    earliest_arrival = models.DateField()
-    latest_arrival = models.DateField()
-    earliest_departure = models.DateField()
-    latest_departure = models.DateField()
+    earliest_arrival = models.DateField(null=True, blank=True)
+    latest_arrival = models.DateField(null=True, blank=True)
+    earliest_departure = models.DateField(null=True, blank=True)
+    latest_departure = models.DateField(null=True, blank=True)
     
     def clean(self):
-        if self.earliest_arrival > self.earliest_departure:
+        if self.earliest_arrival and self.earliest_departure and self.earliest_arrival > self.earliest_departure:
             raise ValidationError("The earliest departure cannot take place before the earliest arrival.")
-        if self.latest_arrival > self.latest_departure:
+        if self.latest_arrival and self.latest_departure and self.latest_arrival > self.latest_departure:
             raise ValidationError("The latest departure cannot take place before the latest arrival.")
     
     def save(self, *args, **kwargs):
