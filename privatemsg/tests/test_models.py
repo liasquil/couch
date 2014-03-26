@@ -166,7 +166,7 @@ class MessageTests(TestCase):
         self.assertEqual(set(calculated_series[10]), set([]))
         self.assertEqual(set(calculated_series[11]), set([]))
     
-    def test_get_preceding_messages_cuts_at_sender_deleted_message_for_sender_and_cuts_not_for_recipient(self):
+    def test_get_preceding_messages_works_with_deletion_by_sender(self):
         user = create_user('user', 'user@example.com')
         partner1 = create_user('partner1', 'p1@example.com')
         partner2 = create_user('partner2', 'p2@example.com')
@@ -193,3 +193,32 @@ class MessageTests(TestCase):
         self.assertEqual(set(series3), set([]), "get_preceding_messages() for sender did not abort at message he deleted when starting with that one.")
         self.assertEqual(set(series4), set(messages[:2]), "get_preceding_messages() for recipient unexpectedly aborted at only sender-deleted message when starting with that one.")
         self.assertEqual(set(series5), set(messages[:2]), "get_preceding_messages() for recipient unexpectedly aborted at only sender-deleted message when starting with that one.")
+        
+    def test_get_preceding_messages_works_with_deletion_by_recipient(self):
+        user = create_user('user', 'usr@example.com')
+        partner1 = create_user('partner1', 'p1@example.com')
+        partner2 = create_user('partner2', 'p2@example.com')
+        
+        m0 = self.send_message(user, None, 'Subject0', '----', (partner1, partner2))
+        m1 = self.send_message(partner1, m0, 'Subject1', '----', (partner2, user))
+        m2 = self.send_message(user, m1, 'Subject3', '----', (partner1, partner2))
+        m3 = self.send_message(partner2, m2, 'Subject2', '----', (user, partner1))
+        m4 = self.send_message(partner1, m3, 'Subject2', '----', (user, partner2))
+        m3.recipient_delete(for_user=user)
+        messages = [m0,m1,m2,m3,m4]
+
+        # Tests function when starting with a msg subsequent to the one he deleted.
+        series0 = m4.get_preceding_messages(for_user=user)
+        series1 = m4.get_preceding_messages(for_user=partner1)
+        series2 = m4.get_preceding_messages(for_user=partner2)
+        self.assertEqual(set(series0), set([]), "get_preceding_messages() for recipient did not abort at message he deleted when starting with a subsequent one.")
+        self.assertEqual(set(series1), set(messages[:4]), "get_preceding_messages() for recipient unexpectedly aborted at message that was recipient-deleted by another person.")
+        self.assertEqual(set(series2), set(messages[:4]), "get_preceding_messages() for sender unexpectedly aborted at message from him that was deleted by one of the recipients.")
+        
+        # Tests when starting with a msg that was sent and then deleted by considered user
+        series3 = m3.get_preceding_messages(for_user=user)
+        series4 = m3.get_preceding_messages(for_user=partner1)
+        series5 = m3.get_preceding_messages(for_user=partner2)
+        self.assertEqual(set(series3), set([]), "get_preceding_messages() for sender did not abort at message he deleted when starting with that one.")
+        self.assertEqual(set(series4), set(messages[:3]), "get_preceding_messages() for recipient unexpectedly aborted at only sender-deleted message when starting with that one.")
+        self.assertEqual(set(series5), set(messages[:3]), "get_preceding_messages() for recipient unexpectedly aborted at only sender-deleted message when starting with that one.")

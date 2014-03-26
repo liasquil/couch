@@ -13,9 +13,25 @@ class Message(models.Model):
     content = models.TextField(max_length=40000)
     deleted_by_sender = models.BooleanField(default=False)
     
+    def is_deleted_by_recipient(self, recipient):
+        try:
+            reference = self.references.get(recipient=recipient)
+        except Reference.DoesNotExist:
+            raise Exception("This message was never sent to that recipient.")
+        return reference.deleted
+    
     def sender_delete(self):
         self.deleted_by_sender=True
         self.save()
+        
+    def recipient_delete(self, for_user):
+        """ Calls recipient_delete() on the reference for the stated recipient.
+        Raises Exception if such reference does not exist ( = msg was not sent to stated person)."""
+        try:
+            reference = self.references.get(recipient=for_user)
+        except Reference.DoesNotExist:
+            raise Exception("This message was not sent to the specified user.")
+        reference.recipient_delete()
     
     def save(self, *args, **kwargs):
         if not self.id:
@@ -31,11 +47,13 @@ class Message(models.Model):
         to this one. """
         
         prmsg = self.preceding_message
-        if ((prmsg == None) or                                                    # Normal exit condition.
-                (prmsg.deleted_by_sender == True and for_user == prmsg.sender) or # Abort when preceding message was deleted by sender.
-                (self.deleted_by_sender == True and for_user == self.sender) or   # Abort when initial msg was deleted by sender. Redundant, but at the first call this is not covered by condition above!
-                for_user not in prmsg.involved_people_set or                      # Abort when it reaches foreign msg
-                for_user not in self.involved_people_set):                        # Cannot start at foreign msg (not covered by condition above!)
+        if ((prmsg == None) or                                                     # Normal exit condition.
+                (prmsg.deleted_by_sender == True and for_user == prmsg.sender) or  # Abort when prec. msg was sent by for_user and deleted by him
+                (self.deleted_by_sender == True and for_user == self.sender) or    # Abort when this  msg was sent by for_user and deleted by him. Redundant, but at the first call this is not covered by condition above!
+                for_user not in prmsg.involved_people_set or                       # Abort when preceding msg is foreign
+                for_user not in self.involved_people_set or                        # Cannot start at foreign msg (not covered by condition above!)
+                (for_user != prmsg.sender and prmsg.is_deleted_by_recipient(for_user)==True) or  # Abort when prec. msg was received by for_user and deleted by him
+                (for_user != self.sender and self.is_deleted_by_recipient(for_user)==True)):     # Abort when this  msg was received by for_user and deleted by him
             return Message.objects.none()
         return prmsg.get_preceding_messages(for_user=for_user)|Message.objects.filter(pk=prmsg.id)
     
@@ -77,6 +95,10 @@ class Reference(models.Model):
     
     read_at = models.DateTimeField(null=True)
     deleted = models.BooleanField(default=False)
+    
+    def recipient_delete(self):
+        self.deleted = True
+        self.save()
     
     def __str__(self):
         return self.message.subject + str(self.id)

@@ -61,7 +61,7 @@ class UserCreationForm(forms.ModelForm):
     
     password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
     password2 = forms.CharField(label='Password confirmation', widget=forms.PasswordInput)
-    username = UsernameField(label='Username [correct field type]')
+    username = UsernameField(label='Username')
 
     class Meta:
         model = CustomUser
@@ -73,22 +73,7 @@ class UserCreationForm(forms.ModelForm):
         
         # assuming that registrees are at least 6 years old
         now = datetime.datetime.now()
-        #widgets = {
-            #'date_of_birth': SelectDateWidget(years=range(now.year-7,1900,-1)), 
-        #}
     
-    
-    #def clean_username(self):
-        ## The username must not be an email
-        #username = self.cleaned_data.get("username")
-        #if looks_like_email(username):
-            #raise forms.ValidationError("An email address is not allowed as the username.")
-        
-        ## message recipients are typed in with comma as separator
-        #if ',' in username:
-            #raise forms.ValidationError("Commas are not allowed.") 
-            
-        #return username
     
     def clean_password1(self):
         return clean_password1(self.cleaned_data)
